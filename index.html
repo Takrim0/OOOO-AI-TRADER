@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#05070b">
+<title>OOOO AI TRADER | Quant Terminal</title>
+<style>
+:root{--bg:#05070b;--panel:#0a0e15;--line:#1b2633;
+--muted:#758397;--green:#00efa3;--pink:#ff3d86;
+--blue:#46b5ff;--purple:#b36bff;--yellow:#ffce62}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#e7edf5;
+font:12px/1.5 Arial,sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+header{padding:13px 15px;border-bottom:1px solid var(--line);
+background:#080c12;position:sticky;top:0;z-index:5}
+.brand{font-size:19px;font-weight:900;letter-spacing:1px}
+.brand span{color:var(--green)}
+.sub{color:var(--muted);font-size:9px;letter-spacing:1.4px}
+.topline{display:flex;align-items:center;justify-content:space-between;
+gap:8px;flex-wrap:wrap}
+.pill{border:1px solid #263443;border-radius:4px;padding:4px 7px;
+color:var(--green);font-size:9px}
+.ticker{display:flex;justify-content:space-between;gap:12px;
+padding:10px 15px;border-bottom:1px solid var(--line);
+overflow:auto;white-space:nowrap}
+.ticker b{font-size:12px}
+.green{color:var(--green)}.pink{color:var(--pink)}
+.muted{color:var(--muted)}
+main{padding:12px;max-width:1100px;margin:auto}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.panel{background:var(--panel);border:1px solid var(--line);
+border-radius:7px;padding:12px;margin-bottom:10px;min-width:0}
+.heading{display:flex;justify-content:space-between;align-items:center;
+gap:8px;margin-bottom:12px;font-weight:bold;font-size:11px;
+letter-spacing:1px}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;
+background:var(--green);margin-right:5px}
+.price{font-size:25px;font-weight:800;letter-spacing:-1px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stat{background:#080c12;padding:9px 7px;border:1px solid #17212d;
+min-width:0}
+.stat label{display:block;color:var(--muted);font-size:9px}
+.stat strong{font-size:13px;display:block;margin-top:5px;
+overflow-wrap:anywhere}
+canvas{width:100%;height:185px;display:block}
+.smallcanvas{height:90px}
+.agentlist{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.agent{border:1px solid #202c3a;background:#080c12;padding:9px 6px;
+text-align:center;border-radius:5px}
+.agent .symbol{font-size:19px;margin-bottom:3px}
+.agent b{font-size:10px;display:block}
+.agent small{font-size:9px;color:var(--muted)}
+.orbit{position:relative;min-height:230px;overflow:hidden;
+display:flex;align-items:center;justify-content:center}
+.ring{position:absolute;width:200px;height:145px;border-radius:50%;
+border:1px solid #234a55;transform:rotate(-25deg);
+box-shadow:0 0 15px #00efa31a}
+.ring.two{width:170px;height:190px;transform:rotate(55deg);
+border-color:#56316e}
+.ring.three{width:230px;height:100px;transform:rotate(20deg);
+border-color:#244c82}
+.core{width:65px;height:65px;border:1px solid var(--green);
+border-radius:50%;display:flex;align-items:center;justify-content:center;
+color:var(--green);font-size:22px;background:#0c211e;
+box-shadow:0 0 30px #00efa329;z-index:1}
+.node{position:absolute;border:1px solid #314151;background:#0a111b;
+padding:5px 7px;border-radius:4px;font-size:9px}
+.n1{top:9px;left:6%}.n2{top:12px;right:5%}
+.n3{bottom:14px;left:5%}.n4{bottom:8px;right:6%}
+.n5{top:45%;left:0}.n6{top:45%;right:0}
+.sectiontitle{font-size:11px;color:#a8b6c9;letter-spacing:1px;
+margin:16px 0 10px}
+.btnrow{display:flex;gap:8px}
+.btn{border:0;border-radius:4px;padding:11px 10px;font-weight:bold;
+flex:1;background:var(--green);color:#03110c}
+.btn.red{background:var(--pink);color:#19040b}
+.btn.dark{background:#192433;color:#d9e4f1}
+input{background:#05080e;color:white;border:1px solid #293748;
+border-radius:4px;padding:11px;width:100%;margin:7px 0 10px}
+.history{display:flex;justify-content:space-between;gap:8px;
+padding:9px 0;border-bottom:1px solid #192431}
+.signal{font-size:22px;font-weight:900;margin:7px 0}
+footer{text-align:center;padding:20px;color:#566579;font-size:9px}
+@media(min-width:700px){
+ main{padding:18px}
+ .layout{display:grid;grid-template-columns:1.15fr .85fr;gap:12px}
+ .price{font-size:30px}
+}
+@media(max-width:360px){
+ main{padding:8px}
+ .panel{padding:9px}
+ .price{font-size:21px}
+ .agentlist{grid-template-columns:repeat(2,1fr)}
+ .orbit{transform:scale(.94)}
+}
+</style>
+</head>
+<body>
+<header>
+ <div class="topline">
+  <div>
+   <div class="brand"><span>◉</span> OOOO AI TRADER</div>
+   <div class="sub">QUANT INTELLIGENCE TERMINAL</div>
+  </div>
+  <span class="pill">● SIMULATION MODE</span>
+ </div>
+</header>
+
+<div class="ticker">
+ <div>BTC/USD <b id="tickerPrice">$67,420</b></div>
+ <div>MARKET <b class="green">DEMO</b></div>
+ <div>AI ENGINE <b class="yellow" style="color:var(--yellow)">SIMULATED</b></div>
+</div>
+
+<main>
+ <div class="layout">
+  <div>
+   <section class="panel">
+    <div class="heading"><span>◉ BTC MARKET OVERVIEW</span>
+     <span class="muted">DEMO FEED</span></div>
+    <div class="price" id="bigPrice">$67,420.00</div>
+    <div class="muted">Illustrative price · Not a live quote</div>
+    <div style="height:12px"></div>
+    <div class="stats">
+     <div class="stat"><label>24H CHANGE</label>
+      <strong class="green">+1.84%</strong></div>
+     <div class="stat"><label>VOLATILITY</label>
+      <strong style="color:var(--yellow)">MEDIUM</strong></div>
+     <div class="stat"><label>ENGINE</label>
+      <strong>DEMO</strong></div>
+    </div>
+   </section>
+
+   <section class="panel">
+    <div class="heading"><span>▥ PRICE ACTION</span>
+     <span class="muted">ILLUSTRATIVE</span></div>
+    <canvas id="chart"></canvas>
+    <div class="row muted" style="display:flex;justify-content:space-between">
+     <span>Historical-style sample</span><span>BTC / USD</span>
+    </div>
+   </section>
+
+   <section class="panel">
+    <div class="heading"><span>◈ SIGNAL ENGINE</span>
+     <span class="pill">NOT LIVE</span></div>
+    <div class="grid">
+     <div>
+      <div class="muted">DEMO SIGNAL</div>
+      <div class="signal" id="signal">WAIT</div>
+      <div class="muted" id="signalText">No verified market data</div>
+     </div>
+     <div>
+      <div class="muted">MODEL AGREEMENT</div>
+      <div class="price" id="agreement">—</div>
+      <div class="muted">Not a validated probability</div>
+     </div>
+    </div>
+    <div style="height:12px"></div>
+    <button class="btn" onclick="runDemo()">RUN DEMO ANALYSIS</button>
+   </section>
+  </div>
+
+  <div>
+   <section class="panel">
+    <div class="heading"><span>◎ AI REACTOR</span>
+     <span class="green">● ONLINE DEMO</span></div>
+    <div class="orbit">
+     <div class="ring"></div><div class="ring two"></div>
+     <div class="ring three"></div>
+     <div class="core">◎</div>
+     <div class="node n1">◉ PRICER</div>
+     <div class="node n2">ϟ TAKER</div>
+     <div class="node n3">◈ SPOTTER</div>
+     <div class="node n4">✦ KELLY</div>
+     <div class="node n5">◇ EDGE</div>
+     <div class="node n6">⊙ CLOSER</div>
+    </div>
+    <div class="muted" style="text-align:center">
+     Animated-style concept · Agents are simulated
+    </div>
+   </section>
+
+   <section class="panel">
+    <div class="heading"><span>◈ AGENT STATUS</span>
+     <span class="muted">6 MODULES</span></div>
+    <div class="agentlist">
+     <div class="agent"><div class="symbol" style="color:var(--blue)">◉</div>
+      <b>PRICER</b><small>Demo only</small></div>
+     <div class="agent"><div class="symbol" style="color:var(--green)">ϟ</div>
+      <b>TAKER</b><small>No orders</small></div>
+     <div class="agent"><div class="symbol" style="color:var(--purple)">✦</div>
+      <b>KELLY</b><small>No sizing</small></div>
+     <div class="agent"><div class="symbol" style="color:var(--pink)">◇</div>
+      <b>EDGE</b><small>No live odds</small></div>
+     <div class="agent"><div class="symbol" style="color:var(--yellow)">⊙</div>
+      <b>CLOSER</b><small>No settlement</small></div>
+     <div class="agent"><div class="symbol" style="color:var(--blue)">◈</div>
+      <b>SPOTTER</b><small>Sample only</small></div>
+    </div>
+   </section>
+
+   <section class="panel">
+    <div class="heading"><span>▤ PAPER TRADING</span>
+     <span class="pill">VIRTUAL USD</span></div>
+    <div class="stats">
+     <div class="stat"><label>BALANCE</label>
+      <strong id="balance">$1,000.00</strong></div>
+     <div class="stat"><label>REALIZED PnL</label>
+      <strong id="pnl">$0.00</strong></div>
+     <div class="stat"><label>TRADES</label>
+      <strong id="count">0</strong></div>
+    </div>
+    <div class="sectiontitle">OPEN SIMULATED TRADE</div>
+    <label class="muted" for="stake">Stake (USD)</label>
+    <input id="stake" type="number" min="1" step="1" value="10">
+    <div class="btnrow">
+     <button class="btn" onclick="trade(true)">WIN +80%</button>
+     <button class="btn red" onclick="trade(false)">LOSS −100%</button>
+    </div>
+    <p class="muted">Manual outcome simulator, not a predictive trade. No real money or orders.</p>
+    <div class="sectiontitle">TRADE HISTORY</div>
+    <div id="history" class="muted">No simulated trades yet.</div>
+    <div style="height:12px"></div>
+    <button class="btn dark" onclick="resetPaper()">RESET DEMO ACCOUNT</button>
+   </section>
+  </div>
+ </div>
+
+ <section class="panel">
+  <div class="heading"><span>▥ PERFORMANCE TRACE</span>
+   <span class="muted">DEMO PnL</span></div>
+  <canvas id="equity" class="smallcanvas"></canvas>
+  <div class="muted">Illustrative performance chart. Past demo outcomes do not predict future results.</div>
+ </section>
+</main>
+
+<footer>
+ OOOO AI TRADER · INDEPENDENT PROJECT · PAPER TRADING ONLY<br>
+ No live market feed · No real AI inference · No financial advice
+</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+let balance=1000,pnl=0,count=0;
+let records=[],equity=[0];
+let price=67420;
+
+function draw(id,values,mode){
+ const c=$(id),ctx=c.getContext('2d');
+ const w=c.clientWidth,h=c.clientHeight;
+ if(!w||!h)return;
+ const dpr=window.devicePixelRatio||1;
+ c.width=w*dpr;c.height=h*dpr;
+ ctx.scale(dpr,dpr);
+ ctx.clearRect(0,0,w,h);
+ ctx.strokeStyle='#172331';ctx.lineWidth=1;
+ for(let i=1;i<5;i++){
+  let y=h*i/5;ctx.beginPath();ctx.moveTo(0,y);
+  ctx.lineTo(w,y);ctx.stroke();
+ }
+ if(mode==='candles'){
+  let min=Math.min(...values),max=Math.max(...values);
+  let span=max-min||1,step=w/values.length;
+  values.forEach((v,i)=>{
+   let open=v+(Math.random()-.5)*span*.15;
+   let close=v+(Math.random()-.5)*span*.15;
+   let high=Math.max(open,close)+span*.035;
+   let low=Math.min(open,close)-span*.035;
+   const y=n=>h-8-(n-min)/span*(h-20);
+   ctx.strokeStyle=close>=open?'#00efa3':'#ff3d86';
+   ctx.fillStyle=ctx.strokeStyle;
+   ctx.beginPath();ctx.moveTo(i*step+step/2,y(high));
+   ctx.lineTo(i*step+step/2,y(low));ctx.stroke();
+   let top=Math.min(y(open),y(close));
+   ctx.fillRect(i*step+step*.2,top,Math.max(2,step*.58),
+    Math.max(2,Math.abs(y(open)-y(close))));
+  });
+ }else{
+  const min=Math.min(...values,0),max=Math.max(...values,1);
+  const span=max-min||1;
+  ctx.beginPath();
+  values.forEach((v,i)=>{
+   const x=values.length===1?w:i*w/(values.length-1);
+   const y=h-5-(v-min)/span*(h-12);
+   i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  });
+  ctx.strokeStyle='#00efa3';ctx.lineWidth=2;ctx.stroke();
+ }
+}
+let samples=Array.from({length:42},(_,i)=>
+  67420+Math.sin(i*.6)*180+(Math.random()-.5)*220);
+function renderCharts(){
+ draw('chart',samples,'candles');
+ draw('equity',equity,'line');
+}
+function runDemo(){
+ const choices=[
+  ['WAIT','Insufficient verified data.','var(--yellow)'],
+  ['UP · DEMO','Illustrative upward scenario.','var(--green)'],
+  ['DOWN · DEMO','Illustrative downward scenario.','var(--pink)']
+ ];
+ const s=choices[Math.floor(Math.random()*choices.length)];
+ $('signal').textContent=s[0];
+ $('signal').style.color=s[2];
+ $('signalText').textContent=s[1];
+ $('agreement').textContent='N/A';
+}
+function trade(win){
+ const amount=Number($('stake').value);
+ if(!Number.isFinite(amount)||amount<=0||amount>balance){
+  alert('Enter a valid stake within your virtual balance.');
+  return;
+ }
+ const result=win?amount*.8:-amount;
+ balance+=result;pnl+=result;count++;
+ equity.push(pnl);
+ records.unshift({win,result,amount});
+ $('balance').textContent='$'+balance.toFixed(2);
+ $('pnl').textContent=(pnl<0?'−$':'$')+Math.abs(pnl).toFixed(2);
+ $('pnl').style.color=pnl<0?'var(--pink)':'var(--green)';
+ $('count').textContent=count;
+ $('history').innerHTML=records.slice(0,8).map(r=>
+  '<div class="history"><span class="'+(r.win?'green':'pink')+'">'+
+  (r.win?'WIN':'LOSS')+' · $'+r.amount.toFixed(2)+
+  '</span><b>'+(r.win?'+':'−')+'$'+Math.abs(r.result).toFixed(2)+
+  '</b></div>').join('');
+ renderCharts();
+}
+function resetPaper(){
+ if(!confirm('Reset all virtual trades?'))return;
+ balance=1000;pnl=0;count=0;records=[];equity=[0];
+ $('balance').textContent='$1,000.00';
+ $('pnl').textContent='$0.00';$('pnl').style.color='var(--green)';
+ $('count').textContent='0';
+ $('history').textContent='No simulated trades yet.';
+ renderCharts();
+}
+function resize(){
+ renderCharts();
+}
+window.addEventListener('resize',resize);
+renderCharts();
+</script>
+</body>
+</html>
