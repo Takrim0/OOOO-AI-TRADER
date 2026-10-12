@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<title>OOOO AI TRADER</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07111f;color:#edf5ff;font-family:Arial,sans-serif}
+header{padding:20px;background:#0c192a;border-bottom:1px solid #23344b}
+.logo{font-size:23px;font-weight:bold;color:#57e3c0}
+.sub{font-size:12px;color:#9aacc4;margin-top:6px}
+main{padding:16px;max-width:800px;margin:auto}
+.card{background:#101f32;border:1px solid #253a51;border-radius:15px;padding:17px;margin-bottom:14px}
+.label{font-size:12px;color:#9aacc4}
+.value{font-size:27px;font-weight:bold;margin:10px 0}
+.green{color:#57e3a7}.red{color:#ff7888}.muted{color:#9aacc4}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+h2{font-size:16px;margin:0 0 15px}
+button{border:0;border-radius:10px;padding:12px;color:#07111f;background:#57e3c0;font-weight:bold;cursor:pointer}
+button.secondary{background:#23374e;color:white}
+button.down{background:#ff7888}
+input{width:100%;padding:12px;background:#07111f;color:white;border:1px solid #354b64;border-radius:9px;margin:10px 0}
+.signal{font-size:25px;font-weight:bold;margin:12px 0}
+.agent{padding:10px 0;border-bottom:1px solid #253a51;font-size:13px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+nav button{flex:1;min-width:90px}
+footer{text-align:center;color:#8293aa;font-size:11px;padding:20px}
+@media(max-width:380px){.grid{grid-template-columns:1fr}.value{font-size:23px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">◉ OOOO AI TRADER</div>
+  <div class="sub">INDEPENDENT MARKET INTELLIGENCE · DEMO MODE</div>
+</header>
+<main>
+  <nav>
+    <button onclick="show('market')">AI Signals</button>
+    <button onclick="show('paper')">Paper Trading</button>
+    <button onclick="show('agents')">AI Agents</button>
+  </nav>
+
+  <section id="market">
+    <div class="card">
+      <div class="row">
+        <div><div class="label">BTC PRICE</div>
+        <div class="value" id="price">$67,420.00</div></div>
+        <span class="muted">DEMO DATA</span>
+      </div>
+      <div class="label">Simulated price — not a live quote</div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="label">MODEL SIGNAL</div>
+        <div class="signal" id="signal">WAIT</div>
+        <div class="muted" id="confidence">Demo confidence: N/A</div>
+      </div>
+      <div class="card">
+        <div class="label">MARKET RISK</div>
+        <div class="value" style="font-size:21px">Unverified</div>
+        <div class="muted">No live data connected</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Signal Analysis</h2>
+      <p class="muted" id="analysis">Demo mode is active. No real market data is being analyzed.</p>
+      <button onclick="generateSignal()">Run Demo Analysis</button>
+    </div>
+  </section>
+
+  <section id="paper" style="display:none">
+    <div class="card">
+      <div class="label">VIRTUAL BALANCE</div>
+      <div class="value green" id="balance">$1,000.00</div>
+      <div class="label">Paper trading only · No real money</div>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="label">REALIZED PnL</div>
+        <div class="value" id="pnl">$0.00</div></div>
+      <div class="card"><div class="label">PAPER TRADES</div>
+        <div class="value" id="count">0</div></div>
+    </div>
+    <div class="card">
+      <h2>Open Demo Position</h2>
+      <label class="label">Stake (USD)</label>
+      <input id="stake" type="number" value="10" min="1" step="1">
+      <label class="label">Demo outcome</label>
+      <div class="row">
+        <button onclick="trade(true)">Win (demo)</button>
+        <button class="down" onclick="trade(false)">Loss (demo)</button>
+      </div>
+      <p class="muted">This simplified simulator models a win as +80% of stake and a loss as −100%. It is not a real Polymarket settlement model.</p>
+      <button class="secondary" onclick="resetPaper()">Reset Demo Account</button>
+    </div>
+    <div class="card">
+      <h2>Trade History</h2>
+      <div id="history" class="muted">No demo trades yet.</div>
+    </div>
+  </section>
+
+  <section id="agents" style="display:none">
+    <div class="card">
+      <h2>Multi-Agent Analysis</h2>
+      <div class="agent"><b>01 · PRICER</b><p class="muted">Live probability model not connected.</p></div>
+      <div class="agent"><b>02 · EDGE DETECTOR</b><p class="muted">Market odds and fees not connected.</p></div>
+      <div class="agent"><b>03 · RISK AGENT</b><p class="muted">Risk rules awaiting configuration.</p></div>
+      <div class="agent"><b>04 · DECISION AGENT</b><p class="muted">No real trading decisions are generated.</p></div>
+    </div>
+  </section>
+  <footer>OOOO AI TRADER · Independent demo project · Not financial advice</footer>
+</main>
+<script>
+let balance=1000,pnl=0,count=0;
+const history=[];
+function show(id){
+  ['market','paper','agents'].forEach(x=>{
+    document.getElementById(x).style.display=x===id?'block':'none';
+  });
+}
+function generateSignal(){
+  const choices=[
+    ['WAIT','Demo signal only: insufficient verified data.'],
+    ['UP (DEMO)','Illustrative upward scenario only; not a forecast.'],
+    ['DOWN (DEMO)','Illustrative downward scenario only; not a forecast.']
+  ];
+  const s=choices[Math.floor(Math.random()*choices.length)];
+  document.getElementById('signal').textContent=s[0];
+  document.getElementById('confidence').textContent='No validated confidence score';
+  document.getElementById('analysis').textContent=s[1];
+}
+function trade(win){
+  const el=document.getElementById('stake');
+  const amount=Number(el.value);
+  if(!Number.isFinite(amount)||amount<=0||amount>balance){
+    alert('Enter a valid stake within your virtual balance.');
+    return;
+  }
+  const result=win?amount*.8:-amount;
+  balance+=result;pnl+=result;count++;
+  history.unshift((win?'WIN +':'LOSS ')+
+    '$'+Math.abs(result).toFixed(2)+' · stake $'+amount.toFixed(2));
+  document.getElementById('balance').textContent='$'+balance.toFixed(2);
+  document.getElementById('pnl').textContent=(pnl<0?'−':'$')+
+    (pnl<0?Math.abs(pnl).toFixed(2):pnl.toFixed(2));
+  document.getElementById('count').textContent=count;
+  document.getElementById('history').innerHTML=history
+    .map(x=>'<div class="agent">'+x+'</div>').join('');
+}
+function resetPaper(){
+  if(!confirm('Reset virtual balance and demo history?'))return;
+  balance=1000;pnl=0;count=0;history.length=0;
+  document.getElementById('balance').textContent='$1000.00';
+  document.getElementById('pnl').textContent='$0.00';
+  document.getElementById('count').textContent='0';
+  document.getElementById('history').textContent='No demo trades yet.';
+}
+</script>
+</body>
+</html>
